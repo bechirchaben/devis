@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formulaire de Devis - BEN-G Fermetures</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #004080 0%, #d60000 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #004080 0%, #d60000 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+      position: relative;
+    }
+
+    .header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" stroke-width="0.5" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+    }
+
+    .header h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header p {
+      font-size: 1.1em;
+      opacity: 0.9;
+      position: relative;
+      z-index: 1;
+    }
+
+    .form-content {
+      padding: 40px;
+    }
+
+    .form-section {
+      margin-bottom: 30px;
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 25px;
+      border-left: 4px solid #004080;
+      transition: all 0.3s ease;
+    }
+
+    .form-section:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+      font-size: 1.3em;
+      color: #333;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title::before {
+      content: '';
+      width: 20px;
+      height: 20px;
+      background: linear-gradient(135deg, #004080 0%, #d60000 100%);
+      border-radius: 50%;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    label {
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 5px;
+      font-size: 0.9em;
+    }
+
+    input,
+    textarea,
+    select {
+      padding: 12px;
+      border: 2px solid #e1e5e9;
+      border-radius: 8px;
+      font-size: 1em;
+      transition: all 0.3s ease;
+      background: white;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: #004080;
+      box-shadow: 0 0 0 3px rgba(0, 64, 128, 0.1);
+    }
+
+    input[readonly] {
+      background: #f8f9fa;
+      color: #666;
+    }
+
+    .articles-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .articles-table th {
+      background: linear-gradient(135deg, #004080 0%, #d60000 100%);
+      color: white;
+      padding: 15px;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .articles-table td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #e1e5e9;
+    }
+
+    .articles-table tr:hover {
+      background: #f8f9fa;
+    }
+
+    .articles-table input {
+      border: none;
+      background: transparent;
+      width: 100%;
+      padding: 8px;
+    }
+
+    .articles-table input:focus {
+      background: white;
+      border: 2px solid #004080;
+      border-radius: 4px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #004080 0%, #d60000 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 64, 128, 0.4);
+    }
+
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+      margin-right: 10px;
+    }
+
+    .btn-secondary:hover {
+      background: #5a6268;
+      transform: translateY(-2px);
+    }
+
+    .btn-add {
+      background: #28a745;
+      color: white;
+      margin-top: 15px;
+    }
+
+    .btn-add:hover {
+      background: #218838;
+      transform: translateY(-2px);
+    }
+
+    .total-section {
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      border-radius: 10px;
+      padding: 25px;
+      margin-top: 20px;
+    }
+
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    .total-row:last-child {
+      border-bottom: none;
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #004080;
+    }
+
+    .total-label {
+      font-weight: 600;
+      color: #555;
+    }
+
+    .total-value {
+      font-weight: bold;
+      color: #333;
+    }
+
+    .submit-section {
+      text-align: center;
+      margin-top: 30px;
+      padding-top: 30px;
+      border-top: 2px solid #e1e5e9;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      color: #004080;
+    }
+
+    .loading::after {
+      content: '';
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #004080;
+      border-top: 2px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-left: 10px;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    .success-message {
+      background: #d4edda;
+      color: #155724;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        margin: 10px;
+        border-radius: 10px;
+      }
+
+      .form-content {
+        padding: 20px;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .header h1 {
+        font-size: 2em;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Générateur de Devis</h1>
+      <p>BEN-G Fermetures - Solutions professionnelles</p>
+    </div>
+
+    <div class="form-content">
+      <form id="devisForm">
+        <div class="form-section">
+          <h3 class="section-title">Informations du Client</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="client_nom">Nom de l'entreprise *</label>
+              <input type="text" id="client_nom" name="client_nom" required>
+            </div>
+            <div class="form-group">
+              <label for="client_email">Email *</label>
+              <input type="email" id="client_email" name="client_email" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="client_adresse">Adresse *</label>
+              <input type="text" id="client_adresse" name="client_adresse" required>
+            </div>
+            <div class="form-group">
+              <label for="client_tel">Téléphone *</label>
+              <input type="tel" id="client_tel" name="client_tel" required>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3 class="section-title">Informations de l'Entreprise</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nom de l'entreprise</label>
+              <input type="text" value="BEN-G Fermetures" readonly>
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" value="contact@bengfermetures.fr" readonly>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Adresse</label>
+              <input type="text" value="39 Rue de la Gare de Reuilly, 75012 Paris" readonly>
+            </div>
+            <div class="form-group">
+              <label>Téléphone</label>
+              <input type="tel" value="+33 1 89 70 39 85" readonly>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3 class="section-title">Objet du Devis</h3>
+          <div class="form-group">
+            <label for="objet">Description du projet *</label>
+            <textarea id="objet" name="objet" rows="3" placeholder="Décrivez brièvement le projet..."
+              required></textarea>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3 class="section-title">Articles et Services</h3>
+          <table class="articles-table" id="articlesTable">
+            <thead>
+              <tr>
+                <th style="width: 60%">Description</th>
+                <th style="width: 20%">Quantité</th>
+                <th style="width: 20%">Prix unitaire HT (€)</th>
+                <th style="width: 20%">Total HT (€)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><input type="text" name="description[]" placeholder="Description du produit/service"></td>
+                <td><input type="number" name="quantite[]" value="1" min="1" step="1" oninput="calculTotal()"></td>
+                <td><input type="number" name="prix[]" step="0.01" min="0" placeholder="0.00" oninput="calculTotal()">
+                </td>
+                <td><span class="total-ligne">0.00</span></td>
+              </tr>
+            </tbody>
+          </table>
+          <button type="button" class="btn btn-add" onclick="ajouterLigne()">+ Ajouter une ligne</button>
+        </div>
+
+        <div class="form-section">
+          <h3 class="section-title">Informations de Paiement</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <div class="form-group">
+                <label for="tva_rate">Taux de TVA</label>
+                <select id="tva_rate" name="tva_rate" onchange="calculTotal()">
+                  <option value="20" selected>20 %</option>
+                  <option value="10">10 %</option>
+                </select>
+              </div>
+
+              <label>IBAN</label>
+              <input type="text" value="FR76 1695 8000 0151 4502 9526 416" readonly>
+            </div>
+            <div class="form-group">
+              <label>BIC/SWIFT</label>
+              <input type="text" value="QNTOFRP1XX" readonly>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="modalite_reglement">Modalité de règlement</label>
+              <select id="modalite_reglement" name="modalite_reglement">
+                <option value="Virement sous 30 jours">Virement sous 30 jours</option>
+                <option value="Chèque sous 15 jours">Chèque sous 15 jours</option>
+                <option value="Espèces à la livraison">Espèces à la livraison</option>
+                <option value="Carte bancaire">Carte bancaire</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="total-section">
+          <div class="total-row">
+            <span class="total-label">Total HT :</span>
+            <span class="total-value" id="totalHT">0.00 €</span>
+          </div>
+          <div class="total-row">
+            <span class="total-label">TVA (20%) :</span>
+            <span class="total-value" id="tva">0.00 €</span>
+          </div>
+          <div class="total-row">
+            <span class="total-label">Total TTC :</span>
+            <span class="total-value" id="totalTTC">0.00 €</span>
+          </div>
+        </div>
+
+        <div class="submit-section">
+          <button type="submit" class="btn btn-primary">
+            📄 Générer le devis PDF
+          </button>
+          <div class="loading" id="loading">
+            Génération du PDF en cours...
+          </div>
+          <div class="success-message" id="successMessage">
+            ✅ Devis généré avec succès !
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let ligneCounter = 1;
+
+    function ajouterLigne() {
+      const table = document.getElementById('articlesTable').getElementsByTagName('tbody')[0];
+      const row = table.insertRow();
+
+      row.innerHTML = `
+        <td><input type="text" name="description[]" placeholder="Description du produit/service"></td>
+        <td><input type="number" name="quantite[]" value="1" min="1" step="1" oninput="calculTotal()"></td>
+        <td><input type="number" name="prix[]" step="0.01" min="0" placeholder="0.00" oninput="calculTotal()"></td>
+        <td><span class="total-ligne">0.00</span></td>
+      `;
+
+      ligneCounter++;
+    }
+
+    function calculTotal() {
+      const rows = document.querySelectorAll('#articlesTable tbody tr');
+      let totalHT = 0;
+
+      rows.forEach(row => {
+        const quantite = parseFloat(row.querySelector('input[name="quantite[]"]').value) || 0;
+        const prix = parseFloat(row.querySelector('input[name="prix[]"]').value) || 0;
+        const totalLigne = quantite * prix;
+
+        row.querySelector('.total-ligne').textContent = totalLigne.toFixed(2);
+        totalHT += totalLigne;
+      });
+
+      const tvaRate = parseFloat(document.getElementById('tva_rate').value) || 20;
+      const tva = totalHT * (tvaRate / 100);
+      const totalTTC = totalHT + tva;
+
+      document.getElementById('totalHT').textContent = totalHT.toFixed(2) + ' €';
+      document.getElementById('tva').textContent = tva.toFixed(2) + ' €';
+      document.getElementById('totalTTC').textContent = totalTTC.toFixed(2) + ' €';
+    }
+
+
+    function ensureSpace(doc, yPos, minSpace = 40) {
+      const pageHeight = doc.internal.pageSize.getHeight();
+      if (yPos + minSpace > pageHeight - 20) {
+        doc.addPage();
+        return 20;
+      }
+      return yPos;
+    }
+
+   function genererPDF(event) {
+  event.preventDefault();
+
+  const loading = document.getElementById('loading');
+  const successMessage = document.getElementById('successMessage');
+
+  loading.style.display = 'block';
+  successMessage.style.display = 'none';
+
+  setTimeout(() => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const primaryBlue = [0, 64, 128];
+    const primaryRed  = [214, 0, 0];
+    const textColor   = [51, 51, 51];
+    const lightGray   = [248, 249, 250];
+
+    // --- EN-TÊTE ---
+    doc.setFillColor(...primaryBlue);
+    doc.rect(0, 0, 210, 45, 'F');
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(28);
+    doc.setFont('helvetica','bold');
+    doc.text('DEVIS', 20, 25);
+    doc.setFontSize(14);
+    doc.text('BEN-G Fermetures', 20, 35);
+    doc.setFontSize(10);
+    doc.setFont('helvetica','normal');
+    doc.text('39 Rue de la Gare de Reuilly, 75012 Paris', 20, 42);
+    doc.setFontSize(9);
+    doc.text('Tél: +33 1 89 70 39 85', 150, 25);
+    doc.text('Email: contact@bengfermetures.fr', 150, 32);
+
+    const today    = new Date().toLocaleDateString('fr-FR');
+    const devisNum = 'DEV-' + Date.now().toString().slice(-6);
+
+    doc.setTextColor(...textColor);
+    doc.setFontSize(12);
+    doc.setFont('helvetica','bold');
+    doc.text(`N° de devis: ${devisNum}`, 20, 60);
+    doc.text(`Date: ${today}`, 20, 68);
+
+    let yPos = 80;
+
+    // --- INFORMATIONS CLIENT ---
+    const clientNom     = document.getElementById('client_nom').value || 'Non renseigné';
+    const clientEmail   = document.getElementById('client_email').value || 'Non renseigné';
+    const clientAdresse = document.getElementById('client_adresse').value || 'Non renseigné';
+    const clientTel     = document.getElementById('client_tel').value || 'Non renseigné';
+    const modalite      = document.getElementById('modalite_reglement').value;
+    const tvaRate       = parseFloat(document.getElementById('tva_rate').value) || 20;
+    const objet         = document.getElementById('objet').value || 'Non renseigné';
+
+    const clientInfoLines = [
+      `Entreprise: ${clientNom}`,
+      `Adresse: ${clientAdresse}`,
+      `Téléphone: ${clientTel}`,
+      `Email: ${clientEmail}`
+    ];
+    const clientBoxHeight = clientInfoLines.length * 7 + 15;
+
+    yPos = ensureSpace(doc, yPos, clientBoxHeight + 10);
+    doc.setFillColor(...lightGray);
+    doc.rect(20, yPos, 170, clientBoxHeight, 'F');
+    doc.setDrawColor(...primaryRed);
+    doc.setLineWidth(2);
+    doc.rect(20, yPos, 170, clientBoxHeight, 'S');
+
+    doc.setTextColor(...primaryRed);
+    doc.setFontSize(12);
+    doc.text('INFORMATIONS CLIENT', 25, yPos + 10);
+    doc.setTextColor(...textColor);
+    doc.setFontSize(10);
+    clientInfoLines.forEach((line,i) => {
+      doc.text(line, 25, yPos + 20 + i * 7);
+    });
+    yPos += clientBoxHeight + 10;
+
+    // --- OBJET DU DEVIS ---
+    const objetLines = doc.splitTextToSize(objet, 170);
+    const objetHeight= objetLines.length * 5 + 10;
+
+    yPos = ensureSpace(doc, yPos, objetHeight + 10);
+    doc.setTextColor(...primaryBlue);
+    doc.setFontSize(12);
+    doc.text('OBJET DU DEVIS:', 30, yPos);
+    yPos += 7;
+
+    doc.setTextColor(...textColor);
+    doc.setFontSize(10);
+    doc.text(objetLines, 20, yPos);
+    yPos += objetLines.length * 5 + 10;
+
+    // --- TABLEAU DES ARTICLES ---
+    const rows        = document.querySelectorAll('#articlesTable tbody tr');
+    let totalHT       = 0;
+    const tableStartY = yPos;
+
+    yPos = ensureSpace(doc, yPos, 30);
+    doc.setFillColor(...primaryBlue);
+    doc.rect(20, yPos, 170, 12, 'F');
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(9);
+    doc.setFont('helvetica','bold');
+    doc.text('Description', 25, yPos + 8);
+    doc.text('Qté',         115, yPos + 8);
+    doc.text('Prix HT',     135, yPos + 8);
+    doc.text('Total HT',    165, yPos + 8);
+    yPos += 12;
+
+    doc.setFont('helvetica','normal');
+    doc.setTextColor(...textColor);
+    let ligneCount = 0;
+
+    rows.forEach((row,index) => {
+      const desc     = row.querySelector('input[name="description[]"]').value;
+      const quantite = parseFloat(row.querySelector('input[name="quantite[]"]').value) || 0;
+      const prix     = parseFloat(row.querySelector('input[name="prix[]"]').value) || 0;
+      const totLigne = quantite * prix;
+
+      if (desc || quantite > 0 || prix > 0) {
+        const descLines = doc.splitTextToSize(desc || `Article ${index+1}`, 85);
+        const blockH    = descLines.length * 5 + 4;
+
+        yPos = ensureSpace(doc, yPos, blockH + 5);
+        if (index % 2 === 0) {
+          doc.setFillColor(250, 250, 250);
+          doc.rect(20, yPos, 170, blockH, 'F');
+        }
+        doc.text(descLines,      25, yPos + 6);
+        doc.text(quantite.toString(), 118, yPos + 6);
+        doc.text(prix.toFixed(2)+' €', 138, yPos + 6);
+        doc.text(totLigne.toFixed(2)+' €', 168, yPos + 6);
+
+        totalHT += totLigne;
+        yPos    += blockH;
+        ligneCount++;
+      }
+    });
+
+    if (ligneCount === 0) {
+      yPos = ensureSpace(doc, yPos, 20);
+      doc.rect(20, yPos, 170, 10, 'F');
+      doc.text('Aucun article saisi', 25, yPos + 7);
+      yPos += 10;
+    }
+
+    doc.setDrawColor(...primaryBlue);
+    doc.rect(20, tableStartY, 170, yPos - tableStartY, 'S');
+
+    // --- TOTALS ---
+    yPos = ensureSpace(doc, yPos, 50);
+    const tva      = totalHT * (tvaRate / 100);
+    const totalTTC = totalHT + tva;
+
+    doc.setFillColor(...primaryRed);
+    doc.rect(120, yPos, 70, 35, 'F');
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(10);
+    doc.text('Total HT:', 125, yPos + 8);
+    doc.text(totalHT.toFixed(2)+' €',   165, yPos + 8);
+    doc.text(`TVA (${tvaRate}%):`, 125, yPos + 16);
+    doc.text(tva.toFixed(2)+' €',       165, yPos + 16);
+    doc.setFontSize(12);
+    doc.text('Total TTC:', 125, yPos + 27);
+    doc.text(totalTTC.toFixed(2)+' €',   165, yPos + 27);
+    yPos += 40;
+
+    // --- CONDITIONS ---
+    yPos = ensureSpace(doc, yPos, 60);
+    doc.setTextColor(...primaryBlue);
+    doc.setFontSize(12);
+    doc.text('CONDITIONS DE PAIEMENT:', 20, yPos);
+    doc.setTextColor(...textColor);
+    doc.setFontSize(10);
+    doc.text(`Modalité de règlement: ${modalite}`, 20, yPos + 10);
+    doc.text('IBAN: FR76 1695 8000 0151 4502 9526 416', 20, yPos + 20);
+    doc.text('BIC/SWIFT: QNTOFRP1XX', 20, yPos + 30);
+    yPos += 50;
+
+    // --- CGV ---
+    yPos = ensureSpace(doc, yPos, 40);
+    doc.setTextColor(...primaryRed);
+    doc.setFontSize(10);
+    doc.setFont('helvetica','bold');
+    doc.text('CONDITIONS GÉNÉRALES:', 20, yPos);
+    doc.setTextColor(...textColor);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(9);
+    doc.text('• Devis valable 30 jours à compter de la date d\'émission', 20, yPos + 8);
+    doc.text('• TVA non applicable, art. 293 B du CGI', 20, yPos + 16);
+    doc.text('• Règlement à réception de facture',      20, yPos + 24);
+
+    const footerY = doc.internal.pageSize.getHeight() - 20;
+    doc.setFontSize(8);
+    doc.setTextColor(128,128,128);
+    doc.text('Ce devis a été généré automatiquement le ' + new Date().toLocaleString('fr-FR'), 20, footerY);
+    doc.text('BEN-G Fermetures - 39 Rue de la Gare de Reuilly, 75012 Paris - contact@bengfermetures.fr', 20, footerY + 8);
+
+    const fileName = `Devis_${clientNom.replace(/\s+/g,'_')}_${devisNum}.pdf`;
+    doc.save(fileName);
+
+    loading.style.display = 'none';
+    successMessage.style.display = 'block';
+    setTimeout(()=>{ successMessage.style.display='none'; }, 5000);
+  }, 1500);
+}
+
+
+
+
+    // Event listener pour le formulaire
+    document.getElementById('devisForm').addEventListener('submit', genererPDF);
+
+    // Calcul initial
+    calculTotal();
+  </script>
+</body>
+
+</html>
